@@ -15,6 +15,11 @@ int main(int argc, char *argv[]) {
     CLIENT *cl;
     req_authorization_t req_authorization_data;
     resp_req_authorization_t *resp;
+    server_response *is_approved;
+    req_access_auth_token_t req_acc_auth_token;
+    resp_req_access_token_t *resp_acc_token;
+    req_access_token_t req_acc_token;
+
 
     if (argc != 1) {
         cout << "Wrong number of parameters" << endl;
@@ -38,10 +43,27 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    cout << "stats= " << resp->status << "- " << resp->token << endl;
+    req_acc_auth_token.req_access_auth_token = resp->token;
 
-    // free(resp);    
+    is_approved = approve_request_token_1(&req_acc_auth_token, cl);
+
+    if (is_approved->response == DENY) {
+        cout << "DENIED";
+    } else {
+        
+        req_acc_token.user_id = strdup(id.c_str());
+        req_acc_token.req_access_auth_token = resp->token;
+
+        resp_acc_token = request_access_token_1(&req_acc_token, cl);
+
+        cout << "bbb\n";
+
+        cout << resp_acc_token->acc_token << endl;
+    }
+
+  
     free(req_authorization_data.user_id);
+    free(req_acc_token.user_id);
     clnt_destroy(cl);
 
     return 0;

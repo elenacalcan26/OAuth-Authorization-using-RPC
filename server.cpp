@@ -18,8 +18,9 @@ int main (int argc, char **argv)
 
     load_simple_db(argv[1], &users_ids);
     load_simple_db(argv[2], &resources);
-
-    register SVCXPRT *transp;
+	load_permissions(argv[3], &approvals);
+	
+	register SVCXPRT *transp;
 
 	pmap_unset (AUTH_PROG, AUTH_VERS);
 
@@ -46,5 +47,5 @@ int main (int argc, char **argv)
 	svc_run ();
 	fprintf (stderr, "%s", "svc_run returned");
 	exit (1);
-    /* NOTREACHED */
+	/* NOTREACHED */
 }
