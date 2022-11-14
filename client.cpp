@@ -2,27 +2,47 @@
 #include <rpc/rpc.h>
 
 #include "rpc_auth.h"
-#include "token.h"
+#include "utils.h"
+
+#define SERVER_ADDRESS		"localhost"
+#define RPC_AUTH_PROG			1
+#define RPC_AUTH_VERS			1
+#define PROTOCOL			"tcp"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
-    char *token;
+    CLIENT *cl;
+    req_authorization_t req_authorization_data;
+    resp_req_authorization_t *resp;
 
-    token = generate_access_token("X5B0TWjmeNtU3vd");
-    cout << token << "\n";
+    if (argc != 1) {
+        cout << "Wrong number of parameters" << endl;
+        exit(1);
+    }
 
-    token = generate_access_token(token);
-    cout << token << "\n";
+    cl = clnt_create(SERVER_ADDRESS, RPC_AUTH_PROG, RPC_AUTH_VERS, PROTOCOL);
 
-    // token = generate_access_token(token);
-    // cout << token << "\n";
+    if (cl == NULL) {
+        clnt_pcreateerror(argv[1]);
+        exit(2);
+    }
 
-    cout << "Another one \n";
-    token = generate_access_token("X5B0TWjmeNtU3vd");
-    cout << token << "\n";
+    string id = "X5B0TWjmeNtU3vd";
+    req_authorization_data.user_id = strdup(id.c_str());
 
-    free(token);
+    resp = request_authorization_1(&req_authorization_data, cl);
+
+    if (resp == NULL) {
+        cout << "null\n";
+        exit(1);
+    }
+
+    cout << "stats= " << resp->status << "- " << resp->token << endl;
+
+    // free(resp);    
+    free(req_authorization_data.user_id);
+    clnt_destroy(cl);
 
     return 0;
 }

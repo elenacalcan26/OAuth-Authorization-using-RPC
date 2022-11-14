@@ -2,6 +2,7 @@
 
 unordered_set<string> users_ids;
 unordered_set<string> resources;
+queue<string> users_approvals;
 
 void load_simple_db(string db_file, unordered_set<string> *db) {
     ifstream file;
@@ -24,4 +25,3 @@ void load_simple_db(string db_file, unordered_set<string> *db) {
     
     file.close();
 }
-
