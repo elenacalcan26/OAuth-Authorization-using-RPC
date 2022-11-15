@@ -1,6 +1,7 @@
 #include <iostream>
 #include <rpc/rpc.h>
 #include <fstream>
+#include <unordered_map>
 
 #include "rpc_auth.h"
 #include "utils.h"
@@ -18,6 +19,8 @@ vector<string> get_tokens(string str) {
     char sep = ',';
     string token;
 
+    setbuf(stdout, NULL);
+
     while (getline(ss, token, sep))
     {
         token.erase(remove_if(token.begin(), token.end(), ::isspace), token.end());
@@ -30,16 +33,34 @@ vector<string> get_tokens(string str) {
     return tokens;
 }
 
+int decode_operation(string op) {
+    if (op.compare("READ")) {
+        return READ;
+    } else if (op.compare("INSERT")) {
+        return INSERT;
+    } else if (op.compare("MODIFY")) {
+        return MODIFY;
+    } else if (op.compare("DELETE")) {
+        return DELETE;
+    } else if (op.compare("EXECUTE")) {
+        return EXECUTE;
+    }
+
+    return -1;
+}
+
 int main(int argc, char *argv[]) {
     CLIENT *cl;
     ifstream file;
     string line;
     vector<string> operations_params;
+    unordered_map<string, string> users_acc_tokens;
 
-    if (argc != 2) {
-        cout << "Wrong number of parameters" << endl;
-        exit(1);
-    }
+
+    // if (argc != 2) {
+    //     cout << "Wrong number of parameters" << endl;
+    //     exit(1);
+    // }
 
     cl = clnt_create(SERVER_ADDRESS, RPC_AUTH_PROG, RPC_AUTH_VERS, PROTOCOL);
 
@@ -60,7 +81,6 @@ int main(int argc, char *argv[]) {
 
         string user_id = operations_params[0];
         string operation_type = operations_params[1];
-        int generate_ref_token = stoi(operations_params[2]);
 
         if (operation_type.compare("REQUEST") == 0) {
             req_authorization_t req_authorization_data;
@@ -70,11 +90,13 @@ int main(int argc, char *argv[]) {
             req_access_token_t req_acc_token;
             resp_req_access_token_t *resp_acc_token;
 
+            int generate_ref_token = stoi(operations_params[2]);
+
             req_authorization_data.user_id = strdup(user_id.c_str());
             resp_auth = request_authorization_1(&req_authorization_data, cl);
 
             if (resp_auth->status == USER_NOT_FOUND) {
-                cout << "USER NOT FOUND" << endl;
+                cout << "USER_NOT_FOUND" << endl;
                 continue;
             }
 
@@ -92,12 +114,24 @@ int main(int argc, char *argv[]) {
 
             resp_acc_token = request_access_token_1(&req_acc_token, cl);
 
-            cout << resp_auth << " -> " << resp_acc_token->acc_token << endl;
+            cout << resp_auth->token << " -> " << resp_acc_token->acc_token << endl;
+
+            users_acc_tokens[user_id] = resp_acc_token->acc_token;
 
             free(req_authorization_data.user_id);
             // free(resp_auth);
             // free(resp_acc_token);
             // free(is_approved);
+        } else {
+            string resource = operations_params[2];
+            server_response *is_valid;
+            delegated_action_t action;
+
+            action.access_token = strdup(users_acc_tokens[user_id].c_str());
+            action.operation_type = decode_operation(operation_type);
+            action.resource = strdup(resource.c_str());
+            
+            is_valid = validate_delegated_action_1(&action, cl);
         }
     }
 

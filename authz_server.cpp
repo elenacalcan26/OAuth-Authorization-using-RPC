@@ -27,7 +27,7 @@ resp_req_authorization_t *request_authorization_1_svc(req_authorization_t *data,
     resp->status = OK;
     resp->token = generate_access_token(data->user_id);
 
-    cout << "\tRequestToken=" << resp->token << endl;
+    cout << "\tRequestToken = " << resp->token << endl;
 
     return resp;
 }
@@ -67,13 +67,10 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
 
     resp->token_avalibilty_time = 1;
 
-    cout << "\tAccessToken=" << resp->acc_token << endl; 
+    cout << "\tAccessToken = " << resp->acc_token << endl; 
 
     users_accessed_tokens[data->user_id] = resp->acc_token;
+    acc_tokens_availibilty[resp->acc_token] = 1; // TODO get availbilty from cmd
     
     return resp;
-}
-
-server_response *validate_delegated_action_1_svc(delegated_action_t *, struct svc_req *) {
-	return NULL;
 }

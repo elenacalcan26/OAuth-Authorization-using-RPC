@@ -16,6 +16,8 @@ int main (int argc, char **argv)
     //     exit(1);
     // }
 
+	setbuf(stdout, NULL);
+
     load_simple_db(argv[1], &users_ids);
     load_simple_db(argv[2], &resources);
 	load_permissions(argv[3], &approvals);

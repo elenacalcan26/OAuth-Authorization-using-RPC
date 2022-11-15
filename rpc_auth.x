@@ -25,7 +25,7 @@ struct server_response {
 };
 
 struct delegated_action_t {
-    string operation_type<>;
+    int operation_type;
     string resource<>;
     string access_token<>;
 };

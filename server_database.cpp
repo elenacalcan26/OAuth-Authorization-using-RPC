@@ -9,6 +9,7 @@ queue<string> approvals;
 unordered_set<string> signed_tokens;
 unordered_map<string, unordered_map<string, vector<int>>> users_permissions_set;
 unordered_map<string, string> users_accessed_tokens;
+unordered_map<string, int> acc_tokens_availibilty;
 
 void load_simple_db(string db_file, unordered_set<string> *db) {
     ifstream file;
