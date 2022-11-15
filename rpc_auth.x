@@ -17,6 +17,7 @@ struct resp_req_access_token_t {
 struct req_access_token_t {
     string user_id<>;
     string req_access_auth_token<>;
+    int generate_ref_token;
 };
 
 struct server_response {

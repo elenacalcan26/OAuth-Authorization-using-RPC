@@ -36,13 +36,6 @@ int main(int argc, char *argv[]) {
     string line;
     vector<string> operations_params;
 
-    // req_authorization_t req_authorization_data;
-    // resp_req_authorization_t *resp;
-    // server_response *is_approved;
-    // req_access_auth_token_t req_acc_auth_token;
-    // resp_req_access_token_t *resp_acc_token;
-    // req_access_token_t req_acc_token;
-
     if (argc != 2) {
         cout << "Wrong number of parameters" << endl;
         exit(1);
@@ -67,6 +60,7 @@ int main(int argc, char *argv[]) {
 
         string user_id = operations_params[0];
         string operation_type = operations_params[1];
+        int generate_ref_token = stoi(operations_params[2]);
 
         if (operation_type.compare("REQUEST") == 0) {
             req_authorization_t req_authorization_data;
@@ -94,6 +88,7 @@ int main(int argc, char *argv[]) {
 
             req_acc_token.user_id = strdup(user_id.c_str());
             req_acc_token.req_access_auth_token = resp_auth->token;
+            req_acc_token.generate_ref_token = generate_ref_token;
 
             resp_acc_token = request_access_token_1(&req_acc_token, cl);
 

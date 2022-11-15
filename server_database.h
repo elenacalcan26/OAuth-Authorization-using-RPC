@@ -17,6 +17,8 @@ extern std::queue<std::string> approvals;
 extern std::unordered_set<std::string> signed_tokens;
 extern std::unordered_map<std::string, std::unordered_map<std::string, std::vector<int>>> users_permissions_set;
 extern std::unordered_map<std::string, std::string> users_accessed_tokens;
+extern std::unordered_map<std::string, int> refresh_tokens_time;
+extern std::unordered_map<std::string, std::string> ceva;
 
 extern void load_simple_db(std::string db_file, std::unordered_set<std::string> *db); 
 extern void load_permissions(std::string perm_file, std::queue<std::string> *approvals);

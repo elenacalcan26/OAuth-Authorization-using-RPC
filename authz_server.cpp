@@ -60,14 +60,16 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
 
     resp->status = OK;
     resp->acc_token = generate_access_token(data->req_access_auth_token);
-    // TODO REFRESH TOKEN
-    // resp->ref_token = generate_access_token(resp->acc_token);
     resp->ref_token = "";
+    if (data->generate_ref_token) {
+        resp->ref_token = generate_access_token(resp->acc_token);
+    }
+
     resp->token_avalibilty_time = 1;
 
     cout << "\tAccessToken=" << resp->acc_token << endl; 
 
-    users_accessed_tokens[resp->acc_token] = data->user_id;
+    users_accessed_tokens[data->user_id] = resp->acc_token;
     
     return resp;
 }
