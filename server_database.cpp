@@ -1,12 +1,14 @@
 #include "server_database.h"
 #include "utils.h"
 
+using namespace std;
+
 unordered_set<string> users_ids;
 unordered_set<string> resources;
 queue<string> approvals;
 unordered_set<string> signed_tokens;
 unordered_map<string, unordered_map<string, vector<int>>> users_permissions_set;
-unordered_map<string, string> users_accessed_tokenes;
+unordered_map<string, string> users_accessed_tokens;
 
 void load_simple_db(string db_file, unordered_set<string> *db) {
     ifstream file;
@@ -65,7 +67,7 @@ vector<string> get_tokens(string str) {
     }
     
     return tokens;
-} 
+}
 
 vector<int> decode_permissions(string permissions) {
     vector<int> decoded_perms;
@@ -107,4 +109,3 @@ unordered_map<string, vector<int>> get_user_files_permissions() {
     approvals.pop();
     return files_permissions;
 }
-

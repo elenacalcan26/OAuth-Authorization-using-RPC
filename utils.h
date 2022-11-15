@@ -1,3 +1,11 @@
+#ifndef UTILS_H
+#define UTILS_H
+
+#include <vector>
+#include <string.h>
+#include <algorithm>
+#include <sstream>
+
 #define OK 0
 #define USER_NOT_FOUND 1
 #define REQUEST_DENIED 2
@@ -12,3 +20,5 @@
 // user approvals
 #define APPROVE 0
 #define DENY 1
+
+#endif // UTILS_H
