@@ -12,6 +12,7 @@ unordered_map<string, unordered_map<string, vector<int>>> users_permissions_set;
 unordered_map<string, string> users_accessed_tokens;
 unordered_map<string, int> acc_tokens_availibilty;
 unordered_map<string, string> users_req_access_tokens;
+std::unordered_map<std::string, std::string> da;
 
 void load_simple_db(string db_file, unordered_set<string> *db) {
     ifstream file;
@@ -96,7 +97,7 @@ vector<int> decode_permissions(string permissions) {
             case 'D': 
                 decoded_perms.push_back(DELETE); 
                 break;
-            case 'E': 
+            case 'X': 
                 decoded_perms.push_back(EXECUTE); 
                 break;
             default: decoded_perms.push_back(-1); // no permission
@@ -114,9 +115,10 @@ unordered_map<string, vector<int>> get_user_files_permissions() {
     for (int i = 0; i < tokens.size(); i += 2) {
         string file = tokens[i];
         string file_perms = tokens[i + 1];
+
         files_permissions[file] = decode_permissions(file_perms);
     }
-
+    
     approvals.pop();
     return files_permissions;
 }
@@ -124,6 +126,29 @@ unordered_map<string, vector<int>> get_user_files_permissions() {
 bool find_acc_token_user(std::string token) {
     for (auto &it : users_accessed_tokens) {
         if (it.second.compare(token) == 0) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+string find_key(std::string token) {
+    for (auto &it : da) {
+        if (it.second.compare(token) == 0) {
+            return it.first;
+        }
+    }
+    
+    return "";
+}
+
+bool is_operation_allowed(int op_type, string resource, string acc_token) {
+    string req_acc_token = find_key(acc_token);
+    unordered_map<string, vector<int>> user_files = users_permissions_set[req_acc_token]; 
+    vector<int> permissions = user_files[resource];
+    for (auto &i : permissions) {
+        if (i == op_type) {
             return true;
         }
     }

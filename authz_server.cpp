@@ -42,6 +42,16 @@ server_response *approve_request_token_1_svc(req_access_auth_token_t *data, stru
     string permissions;
     unordered_map<string, vector<int>> user_permission = get_user_files_permissions();
 
+    // for (auto &file : user_permission) {
+    //     cout << file.first << " -> ";
+
+    //     for (auto &perms : user_permission[file.first]) {
+    //         cout << perms << " ";
+    //     }
+
+    //     cout << endl;
+    // }
+
     // se ataseaza permisiunile user-ului la token-ul pentru cerea de acces la resurse
     users_permissions_set[data->req_access_auth_token] = user_permission;
 
@@ -72,7 +82,7 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
     resp->acc_token = generate_access_token(data->req_access_auth_token);
     resp->ref_token = "";
     if (data->generate_ref_token) {
-        // se genereaza rfresh token la cererea user-ului
+        // se genereaza refresh token la cererea user-ului
         resp->ref_token = generate_access_token(resp->acc_token);
     }
 
@@ -85,6 +95,8 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
 
     // se seteaza timpul token-ului de acces
     acc_tokens_availibilty[resp->acc_token] = token_ttl;
+
+    da[data->req_access_auth_token] = resp->acc_token;
     
     return resp;
 }
