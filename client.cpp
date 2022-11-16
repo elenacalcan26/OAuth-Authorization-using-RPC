@@ -34,19 +34,50 @@ vector<string> get_tokens(string str) {
 }
 
 int decode_operation(string op) {
-    if (op.compare("READ")) {
+    if (op.compare("READ") == 0) {
         return READ;
-    } else if (op.compare("INSERT")) {
+    } else if (op.compare("INSERT") == 0) {
         return INSERT;
-    } else if (op.compare("MODIFY")) {
+    } else if (op.compare("MODIFY") == 0) {
         return MODIFY;
-    } else if (op.compare("DELETE")) {
+    } else if (op.compare("DELETE") == 0) {
         return DELETE;
-    } else if (op.compare("EXECUTE")) {
+    } else if (op.compare("EXECUTE") == 0) {
         return EXECUTE;
     }
 
     return -1;
+}
+
+char* decode_action_response(int code) {
+    switch (code)
+    {
+    case USER_NOT_FOUND:
+        return "USER_NOT_FOUND";
+        break;
+    case REQUEST_DENIED:
+        return "REQUEST_DENIED";
+        break;
+    case PERMISSION_DENIED:
+        return "PERMISSION_DENIED";
+        break;
+    case TOKEN_EXPIRED:
+        return "TOKEN_EXPIRED";
+        break;
+    case RESOURCE_NOT_FOUND:
+        return "RESOURCE_NOT_FOUND";
+        break;
+    case OPERATION_NOT_PERMITTED:
+        return "OPERATION_NOT_PERMITTED";
+        break;
+    case PERMISSION_GRANTED:
+        return "PERMISSION_GRANTED";
+        break; 
+    default:
+        break;
+    }
+
+    return "PERMISSION_GRANTED";
 }
 
 int main(int argc, char *argv[]) {
@@ -56,11 +87,10 @@ int main(int argc, char *argv[]) {
     vector<string> operations_params;
     unordered_map<string, string> users_acc_tokens;
 
-
-    // if (argc != 2) {
-    //     cout << "Wrong number of parameters" << endl;
-    //     exit(1);
-    // }
+    if (argc != 2) {
+        cout << "Wrong number of parameters" << endl;
+        exit(1);
+    }
 
     cl = clnt_create(SERVER_ADDRESS, RPC_AUTH_PROG, RPC_AUTH_VERS, PROTOCOL);
 
@@ -132,6 +162,8 @@ int main(int argc, char *argv[]) {
             action.resource = strdup(resource.c_str());
             
             is_valid = validate_delegated_action_1(&action, cl);
+
+            cout << decode_action_response(is_valid->response) << endl;
         }
     }
 

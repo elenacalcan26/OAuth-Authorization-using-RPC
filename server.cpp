@@ -11,16 +11,17 @@ using namespace std;
 int main (int argc, char **argv)
 {
 
-    // if (argc != 4) {
-    //     cout << "Wrong number of arguments!" << endl;
-    //     exit(1);
-    // }
+    if (argc != 5) {
+        cout << "Wrong number of arguments!" << endl;
+        exit(1);
+    }
 
 	setbuf(stdout, NULL);
 
     load_simple_db(argv[1], &users_ids);
     load_simple_db(argv[2], &resources);
 	load_permissions(argv[3], &approvals);
+	load_token_ttl(argv[4]);
 	
 	register SVCXPRT *transp;
 

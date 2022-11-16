@@ -19,15 +19,20 @@ resp_req_authorization_t *request_authorization_1_svc(req_authorization_t *data,
         exit(1);
     } 
 
+    // verifca existenta user-ului in DB
     if (users_ids.find(data->user_id) == users_ids.end()) {
         resp->status = USER_NOT_FOUND;
         resp->token = "";
         return resp;
     }
+
+    // caz fericit, user exista si ii genreaza token-ul pentru cererea de acces la resurse
     resp->status = OK;
     resp->token = generate_access_token(data->user_id);
 
-    cout << "\tRequestToken = " << resp->token << endl;
+    users_req_access_tokens[data->user_id] = resp->token;
+
+    cout << "  RequestToken = " << resp->token << endl;
 
     return resp;
 }
@@ -37,13 +42,16 @@ server_response *approve_request_token_1_svc(req_access_auth_token_t *data, stru
     string permissions;
     unordered_map<string, vector<int>> user_permission = get_user_files_permissions();
 
+    // se ataseaza permisiunile user-ului la token-ul pentru cerea de acces la resurse
     users_permissions_set[data->req_access_auth_token] = user_permission;
 
+    // verific daca user-ul aproba sau nu permisiunile
     if (user_permission.find("*") != user_permission.end()) {
         resp->response = DENY;
         return resp;
     }
 
+    // user-ul aproba permisiunile si token-ul este semnat
     signed_tokens.insert(data->req_access_auth_token);
 
     resp->response = APPROVE;
@@ -54,23 +62,31 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
 	resp_req_access_token_t *resp = (resp_req_access_token_t*)malloc(sizeof(resp_req_access_token_t));
 
     if (signed_tokens.find(data->req_access_auth_token) == signed_tokens.end()) {
+        // jetonul pentru cerere de acces la resurse nu este semnat => REQUET_DENIED
         resp->status = REQUEST_DENIED;
         return resp;
     }
 
     resp->status = OK;
+    // se genereaza token-ul de acces la resurse
     resp->acc_token = generate_access_token(data->req_access_auth_token);
     resp->ref_token = "";
     if (data->generate_ref_token) {
+        // se genereaza rfresh token la cererea user-ului
         resp->ref_token = generate_access_token(resp->acc_token);
     }
 
-    resp->token_avalibilty_time = 1;
+    resp->token_avalibilty_time = token_ttl;
 
-    cout << "\tAccessToken = " << resp->acc_token << endl; 
+    cout << "  AccessToken = " << resp->acc_token << endl; 
 
+    // se asociaza acces token user-ului
     users_accessed_tokens[data->user_id] = resp->acc_token;
-    acc_tokens_availibilty[resp->acc_token] = 1; // TODO get availbilty from cmd
+
+    // se seteaza timpul token-ului de acces
+    acc_tokens_availibilty[resp->acc_token] = token_ttl;
+
+
     
     return resp;
 }

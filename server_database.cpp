@@ -6,10 +6,12 @@ using namespace std;
 unordered_set<string> users_ids;
 unordered_set<string> resources;
 queue<string> approvals;
+int token_ttl;
 unordered_set<string> signed_tokens;
 unordered_map<string, unordered_map<string, vector<int>>> users_permissions_set;
 unordered_map<string, string> users_accessed_tokens;
 unordered_map<string, int> acc_tokens_availibilty;
+unordered_map<string, string> users_req_access_tokens;
 
 void load_simple_db(string db_file, unordered_set<string> *db) {
     ifstream file;
@@ -49,6 +51,13 @@ void load_permissions(string perm_file, queue<string> *approvals) {
         (*approvals).push(approval);
     }
     
+    file.close();
+}
+
+void load_token_ttl(std::string ttl_file) {
+    ifstream file;
+    file.open(ttl_file);
+    file >> token_ttl;
     file.close();
 }
 
@@ -96,6 +105,7 @@ vector<int> decode_permissions(string permissions) {
     return decoded_perms;
 } 
 
+// ia din coada permisiunile pe care le are un user asupra resurselor
 unordered_map<string, vector<int>> get_user_files_permissions() {
     unordered_map<string, vector<int>> files_permissions;
     string user_files_permissions = approvals.front();
