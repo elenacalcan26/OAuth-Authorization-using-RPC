@@ -120,3 +120,13 @@ unordered_map<string, vector<int>> get_user_files_permissions() {
     approvals.pop();
     return files_permissions;
 }
+
+bool find_acc_token_user(std::string token) {
+    for (auto &it : users_accessed_tokens) {
+        if (it.second.compare(token) == 0) {
+            return true;
+        }
+    }
+    
+    return false;
+}

@@ -85,8 +85,6 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
 
     // se seteaza timpul token-ului de acces
     acc_tokens_availibilty[resp->acc_token] = token_ttl;
-
-
     
     return resp;
 }
