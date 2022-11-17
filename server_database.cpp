@@ -12,7 +12,8 @@ unordered_map<string, unordered_map<string, vector<int>>> users_permissions_set;
 unordered_map<string, string> users_accessed_tokens;
 unordered_map<string, int> acc_tokens_availibilty;
 unordered_map<string, string> users_req_access_tokens;
-std::unordered_map<std::string, std::string> da;
+unordered_map<string, string> da;
+std::unordered_map<std::string, std::string> ref_tokens;
 
 void load_simple_db(string db_file, unordered_set<string> *db) {
     ifstream file;
@@ -140,6 +141,16 @@ string find_key(std::string token) {
         }
     }
     
+    return "";
+}
+
+string find_user_by_acc_token(string token) {
+    for (auto &it : users_accessed_tokens) {
+        if (it.second.compare(token) == 0) {
+            return it.first;
+        } 
+    }
+
     return "";
 }
 

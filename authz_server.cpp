@@ -5,7 +5,6 @@
 #include "rpc_auth.h"
 #include "server_database.h"
 #include "utils.h"
-#include "token.h"
 
 using namespace std;
 
@@ -80,15 +79,19 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
     resp->status = OK;
     // se genereaza token-ul de acces la resurse
     resp->acc_token = generate_access_token(data->req_access_auth_token);
+    cout << "  AccessToken = " << resp->acc_token << endl; 
+    
     resp->ref_token = "";
     if (data->generate_ref_token) {
         // se genereaza refresh token la cererea user-ului
         resp->ref_token = generate_access_token(resp->acc_token);
+
+        // adauga token-ul de refresh a user-ului
+        ref_tokens[resp->acc_token] = resp->ref_token;
+        cout << "  RefreshToken = " << resp->ref_token << endl;
     }
 
     resp->token_avalibilty_time = token_ttl;
-
-    cout << "  AccessToken = " << resp->acc_token << endl; 
 
     // se asociaza acces token user-ului
     users_accessed_tokens[data->user_id] = resp->acc_token;
@@ -96,7 +99,50 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
     // se seteaza timpul token-ului de acces
     acc_tokens_availibilty[resp->acc_token] = token_ttl;
 
+    // asociaza token-ul cererii de acces la resurse cu token-ul de acces
     da[data->req_access_auth_token] = resp->acc_token;
     
+    return resp;
+}
+
+resp_req_access_token_t *req_refresh_acc_token_1_svc(req_refresh_acc_token_t *data, struct svc_req *cl) {
+    resp_req_access_token_t *resp = (resp_req_access_token_t*)malloc(sizeof(resp_req_access_token_t));
+    string user_id = data->user_id;
+    string old_acc_token = data->expired_acc_token;
+    string old_ref_token = ref_tokens[old_acc_token];
+
+    cout << "BEGIN " << user_id << " AUTHZ REFRESH" << endl;
+
+    resp->acc_token = generate_access_token((char*)old_ref_token.c_str());
+    resp->ref_token = generate_access_token(resp->acc_token);
+
+    cout << "  AccessToken = " << resp->acc_token << endl;
+    cout << "  RefreshToken = " << resp->ref_token << endl;
+
+    resp->status = OK;
+    resp->token_avalibilty_time = token_ttl;
+
+    // users_accessed_tokens -> modify this with new acc token
+    users_accessed_tokens[user_id] = resp->acc_token;
+
+    // acc_tokens_availibilty -> remove old acc_token, add the ne one + ttl
+    acc_tokens_availibilty.erase(old_acc_token);
+    acc_tokens_availibilty[resp->acc_token] = token_ttl;
+
+    // da -> also, replace old acc_token with the new ones
+    string req_auth_token = find_key(old_acc_token);
+    da[req_auth_token] = resp->acc_token;
+
+    // si sterge vechea perche, cu cele 2 noi token-uri generate acum
+    ref_tokens.erase(old_acc_token);
+    ref_tokens[resp->acc_token] = resp->ref_token;
+    
+    return resp;
+}
+
+int *get_acc_token_ttl_1_svc(char **data, struct svc_req *cl) {
+    int *resp = (int*)malloc(sizeof(int));
+    string acc_token = *data;
+    *resp = acc_tokens_availibilty[acc_token];
     return resp;
 }
