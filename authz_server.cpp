@@ -4,7 +4,6 @@
 
 #include "rpc_auth.h"
 #include "server_database.h"
-#include "utils.h"
 
 using namespace std;
 
@@ -112,7 +111,6 @@ resp_req_access_token_t *req_refresh_acc_token_1_svc(req_refresh_acc_token_t *da
     resp->status = OK;
     resp->token_avalibilty_time = token_ttl;
 
-    // users_accessed_tokens -> modify this with new acc token
     users_accessed_tokens[user_id] = resp->acc_token;
 
     // acc_tokens_availibilty -> remove old acc_token, add the ne one + ttl
@@ -120,7 +118,7 @@ resp_req_access_token_t *req_refresh_acc_token_1_svc(req_refresh_acc_token_t *da
     acc_tokens_availibilty[resp->acc_token] = token_ttl;
 
     // da -> also, replace old acc_token with the new ones
-    string req_auth_token = find_key(old_acc_token);
+    string req_auth_token = find_str_key(old_acc_token, da);
     da[req_auth_token] = resp->acc_token;
 
     // si sterge vechea perche, cu cele 2 noi token-uri generate acum

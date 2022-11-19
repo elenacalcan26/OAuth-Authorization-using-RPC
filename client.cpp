@@ -1,7 +1,5 @@
 #include <iostream>
 #include <rpc/rpc.h>
-#include <fstream>
-#include <unordered_map>
 
 #include "rpc_auth.h"
 #include "utils.h"
@@ -12,57 +10,6 @@
 #define PROTOCOL			"tcp"
 
 using namespace std;
-
-vector<string> get_tokens(string str) {
-    vector<string> tokens;
-    stringstream ss(str);
-    char sep = ',';
-    string token;
-
-    setbuf(stdout, NULL);
-
-    while (getline(ss, token, sep))
-    {
-        token.erase(remove_if(token.begin(), token.end(), ::isspace), token.end());
-
-        if (!token.empty()) {
-            tokens.push_back(token);
-        }
-    }
-    
-    return tokens;
-}
-
-char* decode_action_response(int code) {
-    switch (code)
-    {
-    case USER_NOT_FOUND:
-        return "USER_NOT_FOUND";
-        break;
-    case REQUEST_DENIED:
-        return "REQUEST_DENIED";
-        break;
-    case PERMISSION_DENIED:
-        return "PERMISSION_DENIED";
-        break;
-    case TOKEN_EXPIRED:
-        return "TOKEN_EXPIRED";
-        break;
-    case RESOURCE_NOT_FOUND:
-        return "RESOURCE_NOT_FOUND";
-        break;
-    case OPERATION_NOT_PERMITTED:
-        return "OPERATION_NOT_PERMITTED";
-        break;
-    case PERMISSION_GRANTED:
-        return "PERMISSION_GRANTED";
-        break; 
-    default:
-        break;
-    }
-
-    return "PERMISSION_GRANTED";
-}
 
 int main(int argc, char *argv[]) {
     CLIENT *cl;
@@ -93,7 +40,7 @@ int main(int argc, char *argv[]) {
     }
 
     while (getline(file, line)) {
-        operations_params = get_tokens(line);
+        operations_params = split_comma_seprated_str(line);
 
         string user_id = operations_params[0];
         string operation_type = operations_params[1];
