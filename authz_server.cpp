@@ -39,17 +39,7 @@ resp_req_authorization_t *request_authorization_1_svc(req_authorization_t *data,
 server_response *approve_request_token_1_svc(req_access_auth_token_t *data, struct svc_req *cl){
     server_response *resp = (server_response*)malloc(sizeof(server_response));
     string permissions;
-    unordered_map<string, vector<int>> user_permission = get_user_files_permissions();
-
-    // for (auto &file : user_permission) {
-    //     cout << file.first << " -> ";
-
-    //     for (auto &perms : user_permission[file.first]) {
-    //         cout << perms << " ";
-    //     }
-
-    //     cout << endl;
-    // }
+    unordered_map<string, unordered_set<string>> user_permission = get_user_files_permissions();
 
     // se ataseaza permisiunile user-ului la token-ul pentru cerea de acces la resurse
     users_permissions_set[data->req_access_auth_token] = user_permission;

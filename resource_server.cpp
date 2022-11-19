@@ -8,34 +8,34 @@
 
 using namespace std;
 
-char *uncode_op_type(int op_type) {
-    switch (op_type)
-    {
-    case 1:
-        return (char*)"READ";
-        break;
-    case 2:
-        return (char*)"INSERT";
-        break;
-    case 3:
-        return (char*)"MODIFY";
-        break;
-    case 4:
-        return (char*)"DELETE";
-        break;
-    case 5:
-        return (char*)"EXECUTE";
-        break;
-    default:
-        break;
-    }
+// char *uncode_op_type(int op_type) {
+//     switch (op_type)
+//     {
+//     case 1:
+//         return (char*)"READ";
+//         break;
+//     case 2:
+//         return (char*)"INSERT";
+//         break;
+//     case 3:
+//         return (char*)"MODIFY";
+//         break;
+//     case 4:
+//         return (char*)"DELETE";
+//         break;
+//     case 5:
+//         return (char*)"EXECUTE";
+//         break;
+//     default:
+//         break;
+//     }
 
-    return "";
-}
+//     return "";
+// }
 
-void print_action_msg(string action, int op_type, string resource, string acc_token) {
+void print_action_msg(string action, string op_type, string resource, string acc_token) {
     cout << action  << " (" 
-    << uncode_op_type(op_type) << "," 
+    << op_type << "," 
     << resource <<","
     << acc_token << ","
     << acc_tokens_availibilty[acc_token] << ")"
@@ -44,9 +44,10 @@ void print_action_msg(string action, int op_type, string resource, string acc_to
 
 server_response *validate_delegated_action_1_svc(delegated_action_t *data, struct svc_req *cl) {
 	server_response *resp = (server_response*)malloc(sizeof(server_response));
-    int op_type = data->operation_type;
+    // int op_type = data->operation_type;
     string resource = data->resource;
     string acc_token = data->access_token;
+    string op_type = data->operation_type;
     
     // verifca daca jetonul de acces este asociat unui user
     if (find_acc_token_user(acc_token) == false) {

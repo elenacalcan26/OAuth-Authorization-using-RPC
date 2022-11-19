@@ -8,7 +8,7 @@ unordered_set<string> resources;
 queue<string> approvals;
 int token_ttl;
 unordered_set<string> signed_tokens;
-unordered_map<string, unordered_map<string, vector<int>>> users_permissions_set;
+unordered_map<string, unordered_map<std::string, unordered_set<string>>> users_permissions_set;
 unordered_map<string, string> users_accessed_tokens;
 unordered_map<string, int> acc_tokens_availibilty;
 unordered_map<string, string> users_req_access_tokens;
@@ -81,35 +81,35 @@ vector<string> get_tokens(string str) {
     return tokens;
 }
 
-vector<int> decode_permissions(string permissions) {
-    vector<int> decoded_perms;
+unordered_set<string> decode_permissions(string permissions) {
+    unordered_set<string> decoded_perms;
 
     for (char const &ch : permissions) {
         switch (ch) {
             case 'R': 
-                decoded_perms.push_back(READ); 
+                decoded_perms.insert("READ"); 
                 break;
             case 'I': 
-                decoded_perms.push_back(INSERT); 
+                decoded_perms.insert("INSERT"); 
                 break;
             case 'M': 
-                decoded_perms.push_back(MODIFY); 
+                decoded_perms.insert("MODIFY"); 
                 break;
             case 'D': 
-                decoded_perms.push_back(DELETE); 
+                decoded_perms.insert("DELETE"); 
                 break;
             case 'X': 
-                decoded_perms.push_back(EXECUTE); 
+                decoded_perms.insert("EXECUTE"); 
                 break;
-            default: decoded_perms.push_back(-1); // no permission
+            default: break; //decoded_perms.insert(""); // no permission
         }
     }
     return decoded_perms;
 } 
 
 // ia din coada permisiunile pe care le are un user asupra resurselor
-unordered_map<string, vector<int>> get_user_files_permissions() {
-    unordered_map<string, vector<int>> files_permissions;
+unordered_map<string, unordered_set<string>> get_user_files_permissions() {
+    unordered_map<string, unordered_set<string>> files_permissions;
     string user_files_permissions = approvals.front();
     vector<string> tokens = get_tokens(user_files_permissions);
 
@@ -154,15 +154,10 @@ string find_user_by_acc_token(string token) {
     return "";
 }
 
-bool is_operation_allowed(int op_type, string resource, string acc_token) {
+bool is_operation_allowed(string op_type, string resource, string acc_token) {
     string req_acc_token = find_key(acc_token);
-    unordered_map<string, vector<int>> user_files = users_permissions_set[req_acc_token]; 
-    vector<int> permissions = user_files[resource];
-    for (auto &i : permissions) {
-        if (i == op_type) {
-            return true;
-        }
-    }
+    unordered_map<string, unordered_set<string>> user_files = users_permissions_set[req_acc_token]; 
+    unordered_set<string> permissions = user_files[resource];
     
-    return false;
+    return (permissions.find(op_type) != permissions.end());
 }

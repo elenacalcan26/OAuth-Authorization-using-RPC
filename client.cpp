@@ -33,22 +33,6 @@ vector<string> get_tokens(string str) {
     return tokens;
 }
 
-int decode_operation(string op) {
-    if (op.compare("READ") == 0) {
-        return READ;
-    } else if (op.compare("INSERT") == 0) {
-        return INSERT;
-    } else if (op.compare("MODIFY") == 0) {
-        return MODIFY;
-    } else if (op.compare("DELETE") == 0) {
-        return DELETE;
-    } else if (op.compare("EXECUTE") == 0) {
-        return EXECUTE;
-    }
-
-    return -1;
-}
-
 char* decode_action_response(int code) {
     switch (code)
     {
@@ -161,7 +145,7 @@ int main(int argc, char *argv[]) {
 
             free(req_authorization_data.user_id);
         } else {
-            // TODO: verifica daca valabilitatea token-ului si daca poate face cerere de refresh
+            // verifica daca valabilitatea token-ului si daca poate face cerere de refresh
             char *user_acc_token = (char*)users_acc_tokens[user_id].c_str();
             int* acc_token_ttl = get_acc_token_ttl_1(&user_acc_token, cl);
 
@@ -172,20 +156,16 @@ int main(int argc, char *argv[]) {
 
                 resp_req_access_token_t *resp_ref = req_refresh_acc_token_1(&req_ref, cl);
 
-                // cout << users_auth_tokens[user_id] << " -> " << resp_ref->acc_token << "," << resp_ref->ref_token << endl;
-
                 users_acc_tokens[user_id] = resp_ref->acc_token;
 
             }
-
-
 
             string resource = operations_params[2];
             server_response *is_valid;
             delegated_action_t action;
 
             action.access_token = strdup(users_acc_tokens[user_id].c_str());
-            action.operation_type = decode_operation(operation_type);
+            action.operation_type = strdup(operation_type.c_str());
             action.resource = strdup(resource.c_str());
             
             is_valid = validate_delegated_action_1(&action, cl);
