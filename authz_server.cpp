@@ -7,10 +7,10 @@
 
 using namespace std;
 
-resp_req_authorization_t *request_authorization_1_svc(req_authorization_t *data, struct svc_req *cl) {
+resp_req_authorization_t *request_authorization_1_svc(char **data, struct svc_req *cl) {
     resp_req_authorization_t *resp =(resp_req_authorization_t*) malloc(sizeof(resp_req_authorization_t));
 
-    cout << "BEGIN " << data->user_id << " AUTHZ" << endl;
+    cout << "BEGIN " << *data << " AUTHZ" << endl;
 
     if (!data) {
         cout << "Null data" << endl;
@@ -18,41 +18,41 @@ resp_req_authorization_t *request_authorization_1_svc(req_authorization_t *data,
     } 
 
     // verifca existenta user-ului in DB
-    if (users_ids.find(data->user_id) == users_ids.end()) {
+    if (users_ids.find(*data) == users_ids.end()) {
         resp->status = USER_NOT_FOUND;
         resp->token = "";
         return resp;
     }
 
-    // caz fericit, user exista si ii genreaza token-ul pentru cererea de acces la resurse
+    // user exista si ii genreaza token-ul pentru cererea de acces la resurse
     resp->status = OK;
-    resp->token = generate_access_token(data->user_id);
+    resp->token = generate_access_token(*data);
 
-    users_req_access_tokens[data->user_id] = resp->token;
+    users_req_access_tokens[*data] = resp->token;
 
     cout << "  RequestToken = " << resp->token << endl;
 
     return resp;
 }
 
-server_response *approve_request_token_1_svc(req_access_auth_token_t *data, struct svc_req *cl){
-    server_response *resp = (server_response*)malloc(sizeof(server_response));
+int *approve_request_token_1_svc(char **data, struct svc_req *cl){
+    int *resp = (int*)malloc(sizeof(int));
     string permissions;
     unordered_map<string, unordered_set<string>> user_permission = get_user_files_permissions();
 
     // se ataseaza permisiunile user-ului la token-ul pentru cerea de acces la resurse
-    users_permissions_set[data->req_access_auth_token] = user_permission;
+    users_permissions_set[*data] = user_permission;
 
     // verific daca user-ul aproba sau nu permisiunile
     if (user_permission.find("*") != user_permission.end()) {
-        resp->response = DENY;
+        *resp = DENY;
         return resp;
     }
 
     // user-ul aproba permisiunile si token-ul este semnat
-    signed_tokens.insert(data->req_access_auth_token);
+    signed_tokens.insert(*data);
 
-    resp->response = APPROVE;
+    *resp = APPROVE;
 	return resp;
 }
 
@@ -60,7 +60,7 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
 	resp_req_access_token_t *resp = (resp_req_access_token_t*)malloc(sizeof(resp_req_access_token_t));
 
     if (signed_tokens.find(data->req_access_auth_token) == signed_tokens.end()) {
-        // jetonul pentru cerere de acces la resurse nu este semnat => REQUET_DENIED
+        // jetonul pentru cerere de acces la resurse nu este semnat => REQUEST_DENIED
         resp->status = REQUEST_DENIED;
         return resp;
     }
@@ -89,7 +89,7 @@ resp_req_access_token_t *request_access_token_1_svc(req_access_token_t *data, st
     acc_tokens_availibilty[resp->acc_token] = token_ttl;
 
     // asociaza token-ul cererii de acces la resurse cu token-ul de acces
-    da[data->req_access_auth_token] = resp->acc_token;
+    auth_acc_tokens[data->req_access_auth_token] = resp->acc_token;
     
     return resp;
 }
@@ -102,6 +102,7 @@ resp_req_access_token_t *req_refresh_acc_token_1_svc(req_refresh_acc_token_t *da
 
     cout << "BEGIN " << user_id << " AUTHZ REFRESH" << endl;
 
+    // se genereaza noi token-uri
     resp->acc_token = generate_access_token((char*)old_ref_token.c_str());
     resp->ref_token = generate_access_token(resp->acc_token);
 
@@ -113,15 +114,11 @@ resp_req_access_token_t *req_refresh_acc_token_1_svc(req_refresh_acc_token_t *da
 
     users_accessed_tokens[user_id] = resp->acc_token;
 
-    // acc_tokens_availibilty -> remove old acc_token, add the ne one + ttl
+    // token-urile vechi sunt suprascrise cu cele noi create
     acc_tokens_availibilty.erase(old_acc_token);
     acc_tokens_availibilty[resp->acc_token] = token_ttl;
-
-    // da -> also, replace old acc_token with the new ones
-    string req_auth_token = find_str_key(old_acc_token, da);
-    da[req_auth_token] = resp->acc_token;
-
-    // si sterge vechea perche, cu cele 2 noi token-uri generate acum
+    string req_auth_token = find_str_key(old_acc_token, auth_acc_tokens);
+    auth_acc_tokens[req_auth_token] = resp->acc_token;
     ref_tokens.erase(old_acc_token);
     ref_tokens[resp->acc_token] = resp->ref_token;
     

@@ -46,34 +46,34 @@ int main(int argc, char *argv[]) {
         string operation_type = operations_params[1];
 
         if (operation_type.compare("REQUEST") == 0) {
-            req_authorization_t req_authorization_data;
             resp_req_authorization_t *resp_auth;
-            server_response *is_approved;
-            req_access_auth_token_t req_acc_auth_token;
+            int *is_approved;
             req_access_token_t req_acc_token;
             resp_req_access_token_t *resp_acc_token;
 
+            // user-ul face o ceree de autorizare
             int generate_ref_token = stoi(operations_params[2]);
             users_refresh_req[user_id] = generate_ref_token;
+            char *in_user_id = (char*)user_id.c_str();
 
-            req_authorization_data.user_id = strdup(user_id.c_str());
-            resp_auth = request_authorization_1(&req_authorization_data, cl);
+            resp_auth = request_authorization_1(&in_user_id, cl);
 
             if (resp_auth->status == USER_NOT_FOUND) {
                 cout << "USER_NOT_FOUND" << endl;
                 continue;
             }
 
-            req_acc_auth_token.req_access_auth_token = resp_auth->token;
-            is_approved = approve_request_token_1(&req_acc_auth_token, cl);
+            // aprobare cerere
+            is_approved = approve_request_token_1(&resp_auth->token, cl);
 
-            if (is_approved->response == DENY) {
+            if (*is_approved == DENY) {
                 cout << "REQUEST_DENIED" << endl;
                 continue;
             }
 
             users_auth_tokens[user_id] = resp_auth->token;
 
+            // face o cerere de acces la resurse
             req_acc_token.user_id = strdup(user_id.c_str());
             req_acc_token.req_access_auth_token = resp_auth->token;
             req_acc_token.generate_ref_token = generate_ref_token;
@@ -90,7 +90,6 @@ int main(int argc, char *argv[]) {
 
             users_acc_tokens[user_id] = resp_acc_token->acc_token;
 
-            free(req_authorization_data.user_id);
         } else {
             // verifica daca valabilitatea token-ului si daca poate face cerere de refresh
             char *user_acc_token = (char*)users_acc_tokens[user_id].c_str();
@@ -107,8 +106,9 @@ int main(int argc, char *argv[]) {
 
             }
 
+            // user-ul face cerere pentru efectuarea operatiei si afla raspunsul server-ului
             string resource = operations_params[2];
-            server_response *is_valid;
+            int *is_valid;
             delegated_action_t action;
 
             action.access_token = strdup(users_acc_tokens[user_id].c_str());
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
             
             is_valid = validate_delegated_action_1(&action, cl);
 
-            cout << decode_action_response(is_valid->response) << endl;
+            cout << decode_action_response(*is_valid) << endl;
         }
     }
 

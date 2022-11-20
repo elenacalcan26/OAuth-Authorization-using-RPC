@@ -11,7 +11,7 @@ unordered_map<string, unordered_map<std::string, unordered_set<string>>> users_p
 unordered_map<string, string> users_accessed_tokens;
 unordered_map<string, int> acc_tokens_availibilty;
 unordered_map<string, string> users_req_access_tokens;
-unordered_map<string, string> da;
+unordered_map<string, string> auth_acc_tokens;
 std::unordered_map<std::string, std::string> ref_tokens;
 
 void load_simple_db(string db_file, unordered_set<string> *db) {
@@ -80,7 +80,7 @@ unordered_map<string, unordered_set<string>> get_user_files_permissions() {
 }
 
 bool is_operation_allowed(string op_type, string resource, string acc_token) {
-    string req_acc_token = find_str_key(acc_token, da);
+    string req_acc_token = find_str_key(acc_token, auth_acc_tokens);
     unordered_map<string, unordered_set<string>> user_files = users_permissions_set[req_acc_token]; 
     unordered_set<string> permissions = user_files[resource];
     
