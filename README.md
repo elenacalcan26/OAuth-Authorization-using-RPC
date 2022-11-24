@@ -3,7 +3,7 @@
 #### Calcan Elena-Claudia  
 #### 343C3  
   
-## Synopsis 
+## Synopsys 
 ------------
 - s-a dezvoltat o aplicatie tip client-server care simuleaza un sistem de 
 autorizare de tip OAuth, folosind protocolul RPC (Remote Procedure Call)  
